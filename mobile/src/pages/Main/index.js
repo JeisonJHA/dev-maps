@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  TextInput,
-  TouchableOpacity
-} from "react-native";
+import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
 import MapView, { Marker, Callout } from "react-native-maps";
 import {
   requestPermissionsAsync,
@@ -14,7 +7,16 @@ import {
 } from "expo-location";
 import { MaterialIcons } from "@expo/vector-icons";
 
-import api from "../services/api";
+import api from "../../services/api";
+import {
+  connect,
+  disconnect,
+  subscribeToNewDevs,
+  subscribeToRemoveDev,
+  subscribeToUpdateDev
+} from "../../services/socket";
+
+import styles from "./styles";
 
 function Main({ navigation }) {
   const [currentRegion, setCurrentRegion] = useState(null);
@@ -41,9 +43,40 @@ function Main({ navigation }) {
     loadInitialPosition();
   }, []);
 
+  useEffect(() => {
+    subscribeToNewDevs(dev => {
+      setDevs([...devs, dev]);
+    });
+
+    subscribeToRemoveDev(dev => {
+      const filterdDevs = devs.filter(d => d._id !== dev._id);
+      setDevs(filterdDevs);
+    });
+  }, [devs]);
+
+  useEffect(() => {
+    subscribeToUpdateDev(dev => {
+      if (devs.length === 0) return;
+      const newData = [
+        ...devs.map(d => {
+          if (d._id !== dev._id) {
+            return d;
+          }
+          return dev;
+        })
+      ];
+      setDevs(newData);
+    });
+  }, [devs]);
+
+  function setupWebSocket() {
+    disconnect();
+    const { latitude, longitude } = currentRegion;
+    connect(latitude, longitude, techs);
+  }
+
   async function loadDevs() {
     const { latitude, longitude } = currentRegion;
-    console.log(latitude, longitude);
     const resp = await api.get("/search", {
       params: {
         latitude,
@@ -51,8 +84,8 @@ function Main({ navigation }) {
         techs
       }
     });
-    console.log(resp.data.devs);
     setDevs(resp.data.devs);
+    setupWebSocket();
   }
 
   function handleRegionChange(region) {
@@ -112,73 +145,5 @@ function Main({ navigation }) {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  map: {
-    flex: 1
-  },
-
-  avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 4,
-    borderWidth: 4,
-    borderColor: "#FFF"
-  },
-
-  callout: {
-    width: 260
-  },
-
-  devName: {
-    fontWeight: "bold",
-    fontSize: 16
-  },
-
-  devBio: {
-    color: "#666",
-    marginTop: 5
-  },
-
-  devTechs: {
-    marginTop: 5
-  },
-
-  searchForm: {
-    flexDirection: "row",
-    position: "absolute",
-    top: 20,
-    left: 20,
-    right: 20,
-    zIndex: 5
-  },
-
-  searchInput: {
-    flex: 1,
-    height: 50,
-    backgroundColor: "#FFF",
-    color: "#333",
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: {
-      width: 4,
-      height: 4
-    }
-  },
-
-  loadButton: {
-    width: 50,
-    height: 50,
-    backgroundColor: "#8E4Dff",
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 15
-  }
-});
 
 export default Main;

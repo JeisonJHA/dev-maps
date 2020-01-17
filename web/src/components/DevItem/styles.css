@@ -3,6 +3,8 @@ li.dev-item {
   box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.02);
   border-radius: 2px;
   padding: 20px;
+  border-color: blue;
+  border: 2px;
 }
 
 li.dev-item header {
