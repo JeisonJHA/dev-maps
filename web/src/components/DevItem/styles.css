@@ -19,18 +19,19 @@ li.dev-item header img {
   border-radius: 50%;
 }
 
-li.dev-item header .user-delete {
+li.dev-item .user-delete {
   flex: 1;
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
-li.dev-item header button {
+li.dev-item button {
   background: none;
   border: none;
 }
 
-header button svg {
+button svg {
   color: #8e4dff;
 }
 

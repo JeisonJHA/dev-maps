@@ -10,19 +10,19 @@ export default function DevItem({ dev, onDelete, onUpdate }) {
         <img src={dev.avatar_url} alt={dev.name} />
         <div className="user-info">
           <strong>{dev.name}</strong>
-          <span>{dev.techs}</span>
-        </div>
-        <div className="user-delete">
-          <button type="button" onClick={() => onUpdate(dev)}>
-            <FaEdit />
-          </button>
-          <button type="button" onClick={() => onDelete(dev._id)}>
-            <FaTrash />
-          </button>
+          <span>{dev.techs.join(", ")}</span>
         </div>
       </header>
       <p>{dev.bio}</p>
-      <a href={`http://github.com/${dev.github_username}`}>Acessar perfil</a>
+      <div className="user-delete">
+        <a href={`http://github.com/${dev.github_username}`}>Go to profile</a>
+        <button type="button" title="Edit" onClick={() => onUpdate(dev)}>
+          <FaEdit />
+        </button>
+        <button type="button" title="Delete" onClick={() => onDelete(dev._id)}>
+          <FaTrash />
+        </button>
+      </div>
     </li>
   );
 }
